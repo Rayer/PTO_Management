@@ -79,9 +79,10 @@ class CalMain:
 
         return payload
 
+
     def create_dayoff_event(self, name, start, end, detail=None):
         event = {
-            'summary': '{0} is PTO'.format(name) if detail is None else '{0} is PTO for {1}'.format(name, detail),
+            'summary': '{0} is off'.format(name) if detail is None else '{0} is off for {1}'.format(name, detail),
             'start': {'date': start},
             'end': {'date': end}
         }
