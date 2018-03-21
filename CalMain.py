@@ -79,7 +79,6 @@ class CalMain:
 
         return payload
 
-
     def create_dayoff_event(self, name, start, end, detail=None):
         event = {
             'summary': '{0} is off'.format(name) if detail is None else '{0} is off for {1}'.format(name, detail),

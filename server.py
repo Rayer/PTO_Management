@@ -2,36 +2,23 @@ import CalMain
 import json
 from datetime import datetime
 from datetime import timedelta
+from pprint import pprint
 from flask import Flask
 from flask import request
+from flask import Response
 app = Flask(__name__)
 cal = CalMain.CalMain()
 
 
-help_message = '''
-PTO Management for SLACK 
-apply yourname start [end(optional)] -- if PTO is only for 1 day, "end" is not necessary. Format is yyyy-mm-dd
-list [name] -- Lookup incoming PTOs, if name is applied, show people with that name only.
-history [name] -- lookup history and future PTOs. if name is applied, show the people with that name only.
-'''
+@app.before_request
+def before_request():
+    # Log the request
+    print('Incoming {0}'.format(request.method))
+    pprint(request.form)
 
 
 @app.route('/pto/slack', methods=['POST', 'GET'])
 def pto_handle():
-    # if request.method == 'GET':
-    #     return help_message
-    #
-    # if request.method == 'POST':
-    #     text = request.form['text']
-    #     arguments = str.split(text, ' ')
-    #     cmd = arguments.pop(0).lower()
-    #
-    #     if cmd == 'list':
-    #         handle_list(arguments)
-    #
-    #     if cmd == 'apply':
-    #         handle_apply(arguments)
-
     return json.dumps(cal.get_incoming_dayoffs())
 
 
@@ -44,7 +31,16 @@ def handle_list():
 
 @app.route('/pto/slack/cal', methods=['POST'])
 def ret_cal_url():
-    return 'https://calendar.google.com/calendar/embed?src=22opmonkdpao2o2grfgev4fvss%40group.calendar.google.com&ctz=Asia%2FTaipei'
+    ret = {
+        'text': 'Click this link to open PTO Calender',
+        'attachments':
+            [{
+                'text': 'https://calendar.google.com/calendar/embed?src=22opmonkdpao2o2grfgev4fvss%40group.calendar'
+                        '.google.com&ctz=Asia%2FTaipei '
+            }]
+    }
+
+    return Response(json.dumps(ret), mimetype='application/json')
 
 
 @app.route('/pto/slack/apply', methods=['POST'])
@@ -66,20 +62,6 @@ def apply_pto():
         return message
     except:
         return 'Invalid format, format should be : name description start(ex. 2011-12-01) end'
-
-
-def handle_apply(arguments):
-    name = arguments.pop(0)
-    start = arguments.pop(0)
-    end = start if arguments.count() == 0 else arguments.pop(0)
-    detail = None if arguments.count() == 0 else arguments.pop(0)
-
-    if end is not None:
-        end = start
-    end_dt = datetime.strptime(end, '%Y-%m-%d')
-    end_dt += datetime.timedelta(days=1)
-    datetime.strftime(end, '%Y-%m-%d')
-    cal.create_dayoff_event(name, start, end, detail)
 
 
 if __name__ == '__main__':
