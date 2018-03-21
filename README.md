@@ -14,3 +14,9 @@ An app for Slack PTO Management. PTOs can be applied in Slack and will be shown 
 	- Endpoint is `http://node.rayer.idv.tw:1200/pto/slack/cal`
 
 ## Server App
+
+###Deployment
+
+Slack command is fixed to `http://node.rayer.idv.tw:1200` as host and port, so it need to fit this requirement.
+
+
