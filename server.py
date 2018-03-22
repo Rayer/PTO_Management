@@ -110,7 +110,7 @@ def ret_cal_url():
 
 
 @app.route('/pto/slack/innova_form', methods=['POST'])
-def ret_cal_url():
+def ret_innova_form():
     ret = {
         'text': 'Click this button to open Innova PTO Form',
         'attachments':
