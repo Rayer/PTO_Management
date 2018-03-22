@@ -66,17 +66,22 @@ def handle_apply():
                         'name': 'vacation',
                         'type': 'button',
                         'text': 'Paid Time Off(PTO)',
-                        'value': attach_vacation_detail('pto', user_name, start, end2)
+                        'value': attach_vacation_detail('Paid Time Off(PTO)', user_name, start, end2)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
                         'text': 'Work From Home(WFH)',
-                        'value': attach_vacation_detail('wfh', user_name, start, end2)
+                        'value': attach_vacation_detail('Work From Home(WFH)', user_name, start, end2)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
-                        'text': 'Personal Leave(PL)',
-                        'value': attach_vacation_detail('pl', user_name, start, end2)
+                        'text': 'Personal Leave',
+                        'value': attach_vacation_detail('Personal Leave', user_name, start, end2)
+                    }, {
+                        'name': 'vacation',
+                        'type': 'button',
+                        'text': 'Sick Leave',
+                        'value': attach_vacation_detail('Sick Leave', user_name, start, end2)
                     }
                 ]
             }
