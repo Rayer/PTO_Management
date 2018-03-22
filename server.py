@@ -12,11 +12,22 @@ app = Flask(__name__)
 cal = CalMain.CalMain()
 
 token = 'xoxp-261545166194-262631279447-335103442198-5fb9e3a70bd2c7297ce259461c3be7a1'
-
+acceptable_datetime_fmt = '%Y%m%d'
+acceptable_datetime_fmt_alt = '%Y-%m-%d'
 
 def get_user_profile(userid):
     profile = json.loads(requests.get('https://slack.com/api/users.info?token={0}&user={1}'.format(token, userid)).content)
     return profile['user']['real_name']
+
+
+def get_datetime_from_input(str_datetime):
+    try:
+        dt = datetime.strptime(str_datetime, acceptable_datetime_fmt)
+    except:
+        dt = datetime.strptime(str_datetime, acceptable_datetime_fmt_alt)
+
+    return dt
+
 
 
 @app.before_request
@@ -42,14 +53,14 @@ def handle_apply():
     date_list = request.form['text'].split(' ')
     user_id = request.form['user_id']
     user_name = get_user_profile(user_id)
-    consume_fmt = '%Y-%m-%d'
     try:
         start = date_list.pop(0)
         end = date_list.pop(0) if date_list else start
-        datetime.strptime(start, consume_fmt)  # Check start format
-        end_dt = datetime.strptime(end, consume_fmt)
+        start_dt = get_datetime_from_input(start)  # Check start format
+        end_dt = get_datetime_from_input(end)
         end_dt += timedelta(days=1)
-        end2 = end_dt.strftime(consume_fmt)
+        start = start_dt.strftime(acceptable_datetime_fmt_alt)
+        end = end_dt.strftime(acceptable_datetime_fmt_alt)
     except:
         return 'Invalid date format, please at least provide start day!'
 
@@ -58,30 +69,27 @@ def handle_apply():
         'attachments': [
             {
                 'callback_id': 'pto_init',
-                'start': start,
-                'end': end2,
-                'name': user_name,
                 'actions': [
                     {
                         'name': 'vacation',
                         'type': 'button',
                         'text': 'Paid Time Off(PTO)',
-                        'value': attach_vacation_detail('Paid Time Off(PTO)', user_name, start, end2)
+                        'value': attach_vacation_detail('Paid Time Off(PTO)', user_name, start, end)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
                         'text': 'Work From Home(WFH)',
-                        'value': attach_vacation_detail('Work From Home(WFH)', user_name, start, end2)
+                        'value': attach_vacation_detail('Work From Home(WFH)', user_name, start, end)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
                         'text': 'Personal Leave',
-                        'value': attach_vacation_detail('Personal Leave', user_name, start, end2)
+                        'value': attach_vacation_detail('Personal Leave', user_name, start, end)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
                         'text': 'Sick Leave',
-                        'value': attach_vacation_detail('Sick Leave', user_name, start, end2)
+                        'value': attach_vacation_detail('Sick Leave', user_name, start, end)
                     }
                 ]
             }
