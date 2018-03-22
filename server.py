@@ -109,6 +109,24 @@ def ret_cal_url():
     return Response(json.dumps(ret), mimetype='application/json')
 
 
+@app.route('/pto/slack/innova_form', methods=['POST'])
+def ret_innova_form():
+    ret = {
+        'text': 'Click this button to open Innova PTO Form',
+        'attachments':
+            [{
+                'actions': [
+                    {
+                        "type": "button",
+                        "text": "Innova PTO Form",
+                        "url": "https://docs.google.com/forms/d/e/1FAIpQLSd64_uB_Is9bnw-2UExckHxQgKyZz-STTPh8EUiY2I6ELdrbw/viewform#responses"
+                    }
+                ]
+            }]
+    }
+
+    return Response(json.dumps(ret), mimetype='application/json')
+
 @app.route('/pto/slack/apply', methods=['POST'])
 def apply_pto():
     try:
