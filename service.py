@@ -1,5 +1,6 @@
-import argparse
 import os
+import server
+from daemon import daemon
 
 def pid_lock(pid_file, main_logic):
     pid = str(os.getpid())
@@ -23,3 +24,11 @@ def pid_lock(pid_file, main_logic):
     finally:
         os.remove(pid_file)
 
+
+class serviced(daemon):
+    def run(self):
+        pid_lock('/var/run/ptomanage_srv.pid', server.main)
+
+
+if __name__ == '__main__':
+    serviced.run()
