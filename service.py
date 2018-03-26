@@ -1,6 +1,5 @@
 import os
 import server
-from daemon import daemon
 
 def pid_lock(pid_file, main_logic):
     pid = str(os.getpid())
