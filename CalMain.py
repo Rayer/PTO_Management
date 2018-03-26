@@ -8,6 +8,7 @@ from oauth2client.file import Storage
 
 import datetime
 import argparse
+import pprint
 try:
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
@@ -79,12 +80,13 @@ class CalMain:
 
         return payload
 
-    def create_dayoff_event(self, name, start, end, detail=None):
+    def create_single_dayoff_event(self, name, day, detail=None):
         event = {
             'summary': '{0} is off'.format(name) if detail is None else '{0} is off for {1}'.format(name, detail),
-            'start': {'date': start},
-            'end': {'date': end}
+            'start': {'dateTime': '{0}T09:00:00'.format(day), 'timeZone': 'Asia/Taipei'},
+            'end': {'dateTime': '{0}T17:00:00'.format(day), 'timeZone': 'Asia/Taipei'}
         }
+        pprint.pprint(event)
         self.service.events().insert(calendarId=self.CALENDAR_ID, body=event).execute()
 
 

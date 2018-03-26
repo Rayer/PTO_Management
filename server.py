@@ -7,6 +7,7 @@ from flask import Flask
 from flask import request
 from flask import Response
 import requests
+import _thread
 
 app = Flask(__name__)
 cal = CalMain.CalMain()
@@ -58,7 +59,6 @@ def handle_apply():
         end = date_list.pop(0) if date_list else start
         start_dt = get_datetime_from_input(start)  # Check start format
         end_dt = get_datetime_from_input(end)
-        end_dt += timedelta(days=1)
         start = start_dt.strftime(acceptable_datetime_fmt_alt)
         end = end_dt.strftime(acceptable_datetime_fmt_alt)
     except:
@@ -135,6 +135,7 @@ def ret_innova_form():
 
     return Response(json.dumps(ret), mimetype='application/json')
 
+
 @app.route('/pto/slack/apply', methods=['POST'])
 def apply_pto():
     try:
@@ -144,11 +145,15 @@ def apply_pto():
         start = arguments.pop(0)
         end = start if not arguments else arguments.pop(0)
         end_dt = datetime.strptime(end, '%Y-%m-%d')
-        end_dt += timedelta(days=1)
+        start_dt = datetime.strptime(start, '%Y-%m-%d')
+        end = end_dt.strftime('%Y-%m-%d')
 
-        # In google cal, 2018-10-22 to 2018-10-24 means start from 10/22 end to 10/23 23:59:59
-        end2 = end_dt.strftime('%Y-%m-%d')
-        cal.create_dayoff_event(name, start, end2, description)
+        delta = end_dt - start_dt  # timedelta
+
+        for i in range(delta.days + 1):
+            print(end_dt + timedelta(days=i))
+
+        cal.create_single_dayoff_event(name, start, description)
         message = 'PTO Applied - Name : {0}, desciption : {1}, start : {2}, end : {3}'.format(name, description, start,
                                                                                               end)
         print(message)
@@ -163,11 +168,12 @@ def interactive():
     callback_id = payload['callback_id']
     if callback_id == 'pto_init':
         value_list = payload['actions'][0]['value'].split('/')
-        type = value_list.pop(0)
+        v_type = value_list.pop(0)
         name = value_list.pop(0)
         start = value_list.pop(0)
         end = value_list.pop(0)
-        cal.create_dayoff_event(name, start, end, type)
+
+        _thread.start_new_thread(create_events_async, (name, start, end, v_type))
 
         ret = {
             'text': 'Successfully submitted vacation, {0}! Press button to open calendar'.format(name)
@@ -176,6 +182,18 @@ def interactive():
         return Response(json.dumps(ret), mimetype='application/json')
 
     return '....!!?'
+
+
+def create_events_async(name, start, end, v_type):
+    start_dt = datetime.strptime(start, acceptable_datetime_fmt_alt)
+    end_dt = datetime.strptime(end, acceptable_datetime_fmt_alt)
+    delta = end_dt - start_dt
+    for i in range(delta.days + 1):
+        day_dt = start_dt + timedelta(days=i)
+        day = day_dt.strftime(acceptable_datetime_fmt_alt)
+        if day_dt.isoweekday() in range(1, 6):
+            print(day_dt)
+            cal.create_single_dayoff_event(name, day, v_type)
 
 
 @app.route('/pto/slack/interactive_load', methods=['POST'])

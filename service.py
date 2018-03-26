@@ -1,6 +1,7 @@
 import os
 import server
 
+
 def pid_lock(pid_file, main_logic):
     pid = str(os.getpid())
     if os.path.isfile(pid_file):
@@ -22,6 +23,7 @@ def pid_lock(pid_file, main_logic):
         main_logic()
     finally:
         os.remove(pid_file)
+
 
 if __name__ == '__main__':
     pid_lock('/tmp/ptomanagement.pid', server.main)
