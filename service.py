@@ -23,11 +23,5 @@ def pid_lock(pid_file, main_logic):
     finally:
         os.remove(pid_file)
 
-
-class serviced(daemon):
-    def run(self):
-        pid_lock('/var/run/ptomanage_srv.pid', server.main)
-
-
 if __name__ == '__main__':
-    serviced.run()
+    pid_lock('/tmp/ptomanagement.pid', server.main)
