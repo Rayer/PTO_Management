@@ -183,5 +183,9 @@ def interactive_load():
     return '.....!!!'
 
 
-if __name__ == '__main__':
+def main():
     app.run(host='0.0.0.0', port=1200)
+
+
+if __name__ == '__main__':
+    main()
