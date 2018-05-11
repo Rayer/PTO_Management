@@ -1,5 +1,6 @@
 import CalMain
 import json
+import Configuration
 from datetime import datetime
 from datetime import timedelta
 from pprint import pprint
@@ -12,12 +13,13 @@ import _thread
 app = Flask(__name__)
 cal = CalMain.CalMain()
 
-token = 'xoxp-261545166194-262631279447-335103442198-5fb9e3a70bd2c7297ce259461c3be7a1'
+SLACK_TOKEN = Configuration.SLACK_API_TOKEN
 acceptable_datetime_fmt = '%Y%m%d'
 acceptable_datetime_fmt_alt = '%Y-%m-%d'
 
+
 def get_user_profile(userid):
-    profile = json.loads(requests.get('https://slack.com/api/users.info?token={0}&user={1}'.format(token, userid)).content)
+    profile = json.loads(requests.get('https://slack.com/api/users.info?token={0}&user={1}'.format(SLACK_TOKEN, userid)).content)
     return profile['user']['real_name']
 
 
