@@ -4,6 +4,13 @@
 
 An app for Slack PTO Management. PTOs can be applied in Slack and will be shown in destinated google calendar.
 
+## `client_secret.json`
+
+This application requires client secret, please contact project owner, or you can issue one [here](https://console.developers.google.com/apis/dashboard?project=u2ber-203314).
+
+Require permission and APIs are Google Calendar.
+
+
 ## Commands and Endpoints
 
 - `/pto_apply` It will apply a PTO entry. Format is `/pto_apply name description start end`
