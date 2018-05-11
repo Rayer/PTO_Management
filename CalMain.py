@@ -1,5 +1,6 @@
 import httplib2
 import os
+import Configuration
 
 from apiclient import discovery
 from oauth2client import client
@@ -17,7 +18,7 @@ except ImportError:
 
 class CalMain:
     SCOPES = 'https://www.googleapis.com/auth/calendar'
-    CLIENT_SECRET_FILE = 'client_secret.json'
+    CLIENT_SECRET_FILE = Configuration.GOOGLE_OAUTH_PATH
     APPLICATION_NAME = 'Slack-Cal-Integration'
     CALENDAR_ID = '22opmonkdpao2o2grfgev4fvss@group.calendar.google.com'
 
