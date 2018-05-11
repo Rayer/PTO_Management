@@ -24,6 +24,6 @@ Require permission and APIs are Google Calendar.
 
 ###Deployment
 
-Slack command is fixed to `http://node.rayer.idv.tw:1200` as host and port, so it need to fit this requirement.
+Currently our team slack setting is points to endpoints start from `http://node.rayer.idv.tw:1200/pto/slack/`. Will be configurable in future.
 
 
