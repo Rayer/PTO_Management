@@ -10,6 +10,8 @@ This application requires client secret, please contact project owner, or you ca
 
 Require permission and APIs are Google Calendar.
 
+Configuration.py contains sensitive information. you can use `git update-index --assume-unchanged` to prevent it being committed to repository.
+
 
 ## Commands and Endpoints
 
@@ -22,7 +24,7 @@ Require permission and APIs are Google Calendar.
 
 ## Server App
 
-###Deployment
+###D eployment
 
 Currently our team slack setting is points to endpoints start from `http://node.rayer.idv.tw:1200/pto/slack/`. Will be configurable in future.
 
