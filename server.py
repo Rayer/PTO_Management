@@ -1,6 +1,7 @@
 import CalMain
 import json
 import Configuration
+from db_access import member_access
 from datetime import datetime
 from datetime import timedelta
 from pprint import pprint
@@ -9,6 +10,9 @@ from flask import request
 from flask import Response
 import requests
 import _thread
+import urllib.parse
+
+from enum import Enum
 
 app = Flask(__name__)
 cal = CalMain.CalMain()
@@ -18,8 +22,44 @@ acceptable_datetime_fmt = '%Y%m%d'
 acceptable_datetime_fmt_alt = '%Y-%m-%d'
 
 
+PTO_Form_Requirements = {
+    'type': '1015037157',
+    'innova_id': '2037176764',
+    'chc_id': '1299006122',
+    'name': '1823578907',
+    'innova_email': '645853825',
+    'chc_email': '1132405825',
+    'dept': '1840028477',
+    'start_m': '921047429_month',
+    'start_d': '921047429_day',
+    'start_y': '921047429_year',
+    'start_hour': '1522291402',
+    'end_m': '420978657_month',
+    'end_d': '420978657_day',
+    'end_y': '420978657_year',
+    'end_hour': '1925858911'
+}
+
+innova_form_template = 'https://docs.google.com/forms/d/e/1FAIpQLSd64_uB_Is9bnw-2UExckHxQgKyZz-STTPh8EUiY2I6ELdrbw' \
+                       '/viewform?'
+
+
+def create_innova_prefill_form(info):
+    ret = {}
+    for key, value in PTO_Form_Requirements.items():
+        data = info[key]
+        ret.update({'entry.{}'.format(value): data})
+
+    return innova_form_template + urllib.parse.urlencode(ret)
+
+
+def create_inno_datasheet():
+    return dict.fromkeys(PTO_Form_Requirements, '')
+
+
 def get_user_profile(userid):
-    profile = json.loads(requests.get('https://slack.com/api/users.info?token={0}&user={1}'.format(SLACK_TOKEN, userid)).content)
+    profile = json.loads(
+        requests.get('https://slack.com/api/users.info?token={0}&user={1}'.format(SLACK_TOKEN, userid)).content)
     return profile['user']['real_name']
 
 
@@ -30,7 +70,6 @@ def get_datetime_from_input(str_datetime):
         dt = datetime.strptime(str_datetime, acceptable_datetime_fmt_alt)
 
     return dt
-
 
 
 @app.before_request
@@ -50,6 +89,7 @@ def pto_handle():
 
 def attach_vacation_detail(type, name, start, end):
     return '{0}/{1}/{2}/{3}'.format(type, name, start, end)
+
 
 @app.route('/pto/slack', methods=['POST'])
 def handle_apply():
@@ -75,13 +115,13 @@ def handle_apply():
                     {
                         'name': 'vacation',
                         'type': 'button',
-                        'text': 'Paid Time Off(PTO)',
-                        'value': attach_vacation_detail('Paid Time Off(PTO)', user_name, start, end)
+                        'text': 'Annual Paid Leave',
+                        'value': attach_vacation_detail('Annual Paid Leave', user_name, start, end)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
-                        'text': 'Work From Home(WFH)',
-                        'value': attach_vacation_detail('Work From Home(WFH)', user_name, start, end)
+                        'text': 'Work From Home',
+                        'value': attach_vacation_detail('Work From Home', user_name, start, end)
                     }, {
                         'name': 'vacation',
                         'type': 'button',
@@ -177,8 +217,41 @@ def interactive():
 
         _thread.start_new_thread(create_events_async, (name, start, end, v_type))
 
+        m = member_access()
+        employee = m.employee_info(name)
+        info = create_inno_datasheet()
+        info.update(employee)
+
+        info['type'] = v_type;
+        start_tok = start.split('-')
+        info['start_m'] = start_tok[1]
+        info['start_d'] = start_tok[2]
+        info['start_y'] = start_tok[0]
+        info['start_hour'] = '9'
+        end_tok = end.split('-')
+        info['end_m'] = end_tok[1]
+        info['end_d'] = end_tok[2]
+        info['end_y'] = end_tok[0]
+        info['end_hour'] = '18'
+        info['dept'] = 'MCDS'
+
+        url = create_innova_prefill_form(info)
+
         ret = {
-            'text': 'Successfully submitted vacation, {0}! Press button to open calendar'.format(name)
+            'text': 'Successfully submitted vacation, {0}! Here is prefilled Innova PTO form : '.format(name),
+            "attachments": [
+                {
+                    "fallback": "Your PTO is ready",
+                    "actions": [
+                        {
+                            "type": "button",
+                            "text": "Innova Vacation Form",
+                            "url": url
+                        }
+                    ]
+                }
+            ]
+
         }
 
         return Response(json.dumps(ret), mimetype='application/json')
