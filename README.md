@@ -24,8 +24,10 @@ Configuration.py contains sensitive information. you can use `git update-index -
 
 ## Server App
 
-###D eployment
+### Deployment
 
 Currently our team slack setting is points to endpoints start from `http://node.rayer.idv.tw:1200/pto/slack/`. Will be configurable in future.
+
+Deployment to Heroku is under going.
 
 
