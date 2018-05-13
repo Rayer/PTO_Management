@@ -10,12 +10,54 @@ from flask import Response
 import requests
 import _thread
 
+from enum import Enum
+
 app = Flask(__name__)
 cal = CalMain.CalMain()
 
 SLACK_TOKEN = Configuration.SLACK_API_TOKEN
 acceptable_datetime_fmt = '%Y%m%d'
 acceptable_datetime_fmt_alt = '%Y-%m-%d'
+
+
+class LeaveType(Enum):
+    PersonalLeave = 'Personal Leave',
+    PTO = 'Annual Paid Leave',
+    WorkFromHome = 'Work From Home'
+    SickLeave = 'Sick Leave'  # Sick Leave currently not supporting.
+
+PTO_Form_Requirements = {
+    'type': '1015037157',             # 1015037157
+    'inno_work_id': '2037176764',     # 2037176764
+    'chc_work_id': '1299006122',      # 1299006122
+    'name': '1823578907',             # 1823578907
+    'inno_email': '645853825',       # 645853825
+    'chc_email': '1132405825',        # 1132405825
+    'dept': '1840028477',         # 1840028477
+    'start_m': '921047429_month',          # 921047429_month
+    'start_d': '921047429_day',          # 921047429_day
+    'start_y': '921047429_year',          # 921047429_year
+    'start_hour': '1522291402',       # 1522291402, only 9 and 14
+    'end_m': '420978657_month',            # 420978657_month
+    'end_d': '420978657_day',            # 420978657_day
+    'end_y': '420978657_year',            # 420978657_year
+    'end_hour': '1925858911'          # 1925858911, only 14 and 18
+}
+
+innova_form_template = 'https://docs.google.com/forms/d/e/1FAIpQLSd64_uB_Is9bnw-2UExckHxQgKyZz-STTPh8EUiY2I6ELdrbw' \
+                       '/viewform?'
+
+def create_innova_prefill_form(info):
+    ret = []
+    for key, value in PTO_Form_Requirements.items():
+        data = info[key]
+        ret.append('entry.{}={}'.format(value, data))
+
+    return innova_form_template + '&'.join(ret)
+
+
+def create_inno_datasheet():
+    return dict.fromkeys(PTO_Form_Requirements, '')
 
 
 def get_user_profile(userid):
@@ -177,8 +219,48 @@ def interactive():
 
         _thread.start_new_thread(create_events_async, (name, start, end, v_type))
 
+        info = create_inno_datasheet()
+        info['name'] = name
+        info['inno_work_id'] = 'IST1217'
+        info['chc_work_id'] = ''
+        info['inno_email'] = 'rayer.tung@innovasolution.com'
+        info['chc_email'] = 'rayer.tung@changehealthcare.com'
+        start_tok = start.split('-')
+        info['start_m'] = start_tok[1]
+        info['start_d'] = start_tok[2]
+        info['start_y'] = start_tok[0]
+        info['start_hour'] = '9'
+        end_tok = end.split('-')
+        info['end_m'] = end_tok[1]
+        info['end_d'] = end_tok[2]
+        info['end_y'] = end_tok[0]
+        info['end_hour'] = '18'
+        info['dept'] = 'MCDS'
+
+        url = create_innova_prefill_form(info)
+
         ret = {
-            'text': 'Successfully submitted vacation, {0}! Press button to open calendar'.format(name)
+            'text': 'Successfully submitted vacation, {0}! Here is prefilled Innova PTO form : '.format(name),
+            "attachments": [
+                {
+                    "fallback": "Your PTO is ready",
+                    "actions": [
+                        {
+                            "type": "button",
+                            "text": "Innova Vacation Form",
+                            "url": url,
+
+                        },
+                        {
+                            "type": "button",
+                            "text": "Cancel travel request",
+                            "url": "https://requests.example.com/cancel/r123456",
+                            "style": "danger"
+                        }
+                    ]
+                }
+            ]
+
         }
 
         return Response(json.dumps(ret), mimetype='application/json')
