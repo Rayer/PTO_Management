@@ -9,6 +9,7 @@ from flask import request
 from flask import Response
 import requests
 import _thread
+import urllib.parse
 
 from enum import Enum
 
@@ -48,12 +49,12 @@ innova_form_template = 'https://docs.google.com/forms/d/e/1FAIpQLSd64_uB_Is9bnw-
                        '/viewform?'
 
 def create_innova_prefill_form(info):
-    ret = []
+    ret = {}
     for key, value in PTO_Form_Requirements.items():
         data = info[key]
-        ret.append('entry.{}={}'.format(value, data))
+        ret.update({'entry.{}'.format(value): data})
 
-    return innova_form_template + '&'.join(ret)
+    return innova_form_template + urllib.parse.urlencode(ret)
 
 
 def create_inno_datasheet():
@@ -248,14 +249,7 @@ def interactive():
                         {
                             "type": "button",
                             "text": "Innova Vacation Form",
-                            "url": url,
-
-                        },
-                        {
-                            "type": "button",
-                            "text": "Cancel travel request",
-                            "url": "https://requests.example.com/cancel/r123456",
-                            "style": "danger"
+                            "url": url
                         }
                     ]
                 }
