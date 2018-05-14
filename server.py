@@ -1,7 +1,8 @@
 import CalMain
 import json
-import Configuration
+from db_access import sensitive_data
 from db_access import member_access
+import Configuration
 from datetime import datetime
 from datetime import timedelta
 from pprint import pprint
@@ -17,7 +18,12 @@ from enum import Enum
 app = Flask(__name__)
 cal = CalMain.CalMain()
 
-SLACK_TOKEN = Configuration.SLACK_API_TOKEN
+with sensitive_data() as sd:
+    SLACK_TOKEN = sd.get('slack_api_token')
+
+if SLACK_TOKEN is None:
+    SLACK_TOKEN = Configuration.SLACK_API_TOKEN
+
 acceptable_datetime_fmt = '%Y%m%d'
 acceptable_datetime_fmt_alt = '%Y-%m-%d'
 
