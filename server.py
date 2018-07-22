@@ -74,7 +74,6 @@ def get_datetime_from_input(str_datetime):
         dt = datetime.strptime(str_datetime, acceptable_datetime_fmt)
     except:
         dt = datetime.strptime(str_datetime, acceptable_datetime_fmt_alt)
-
     return dt
 
 
@@ -94,7 +93,10 @@ def pto_handle():
 
 
 def attach_vacation_detail(type, name, start, end):
-    return '{0}/{1}/{2}/{3}'.format(type, name, start, end)
+    # return '{0}/{1}/{2}/{3}'.format(type, name, start, end)
+    vacation_detail = {'type': type, 'name': name, 'start': start, 'end': end}
+    return json.dumps(vacation_detail);
+
 
 
 @app.route('/pto/slack', methods=['POST'])
@@ -215,11 +217,12 @@ def interactive():
     payload = json.loads(request.form['payload'])
     callback_id = payload['callback_id']
     if callback_id == 'pto_init':
-        value_list = payload['actions'][0]['value'].split('/')
-        v_type = value_list.pop(0)
-        name = value_list.pop(0)
-        start = value_list.pop(0)
-        end = value_list.pop(0)
+        value_string = payload['actions'][0]['value']
+        value = json.loads(value_string)
+        v_type = value['type']
+        name = value['name']
+        start = value['start']
+        end = value['end']
 
         _thread.start_new_thread(create_events_async, (name, start, end, v_type))
 
